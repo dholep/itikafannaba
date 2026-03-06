@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "participant_id": 1,
+    "date": "2026-03-07",
+    "attendees": [
+      "Dony Ariyanto"
+    ],
+    "night": 21
+  },
+  {
+    "id": 2,
+    "participant_id": 3,
+    "date": "2026-03-07",
+    "attendees": [
+      "Dedi",
+      "Desi"
+    ],
+    "night": 21
+  },
+  {
+    "id": 3,
+    "participant_id": 2,
+    "date": "2026-03-07",
+    "attendees": [
+      "Dony Ariyanto",
+      "ammar",
+      "ahsan"
+    ],
+    "night": 21
+  },
+  {
+    "id": 4,
+    "participant_id": 4,
+    "date": "2026-03-07",
+    "attendees": [
+      "Dony Ariyantof"
+    ],
+    "night": 21
+  }
+]

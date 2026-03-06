@@ -1,0 +1,34 @@
+# Node/Next build artifacts
+node_modules/
+.next/
+out/
+dist/
+.cache/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# IDE/editor
+.vscode/
+.trae/
+
+# OS-specific
+Thumbs.db
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local data storage (contains personal data)
+data/*.json
+
+# Misc
+.vercel/
+.env.local
