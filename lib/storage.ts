@@ -1,6 +1,16 @@
 import fs from "fs/promises";
 import path from "path";
 
+function getBaseDataDir() {
+  const envDir = process.env.DATA_DIR;
+  if (envDir && envDir.trim()) return envDir;
+  const isVercel = process.env.VERCEL === "1";
+  return isVercel ? "/tmp/data" : path.join(process.cwd(), "data");
+}
+function dataPath(file: string) {
+  return path.join(getBaseDataDir(), file);
+}
+
 export type Participant = {
   id: number;
   participant_code: string;
@@ -10,7 +20,7 @@ export type Participant = {
   created_at: string;
 };
 
-const dataFile = path.join(process.cwd(), "data", "participants.json");
+const dataFile = dataPath("participants.json");
 
 async function ensureDataFile() {
   try {
@@ -107,7 +117,7 @@ export type Child = {
   name: string;
 };
 
-const childrenFile = path.join(process.cwd(), "data", "children.json");
+const childrenFile = dataPath("children.json");
 
 async function ensureChildrenFile() {
   try {
@@ -191,7 +201,7 @@ export type AttendanceRecord = {
   attendees: string[];
 };
 
-const attendanceFile = path.join(process.cwd(), "data", "attendance.json");
+const attendanceFile = dataPath("attendance.json");
 
 async function ensureAttendanceFile() {
   try {
@@ -266,7 +276,7 @@ export type Settings = {
   registration_open: boolean;
 };
 
-const settingsFile = path.join(process.cwd(), "data", "settings.json");
+const settingsFile = dataPath("settings.json");
 
 async function ensureSettingsFile() {
   try {
