@@ -14,14 +14,20 @@ export default async function HomePage() {
   const children = await readChildren();
   const totalPeople = participants.length + children.length;
   const attendance = await readAttendance();
-  const now = new Date();
-  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+  const wibNow = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  const today = `${wibNow.getUTCFullYear()}-${String(wibNow.getUTCMonth() + 1).padStart(
     2,
     "0"
-  )}-${String(now.getDate()).padStart(2, "0")}`;
-  const todayCount = attendance
+  )}-${String(wibNow.getUTCDate()).padStart(2, "0")}`;
+  let todayCount = attendance
     .filter((a) => a.date === today)
     .reduce((acc, a) => acc + a.attendees.length, 0);
+  if (todayCount === 0 && attendance.length > 0) {
+    const latestDate = attendance.reduce((m, a) => (a.date > m ? a.date : m), attendance[0].date);
+    todayCount = attendance
+      .filter((a) => a.date === latestDate)
+      .reduce((acc, a) => acc + a.attendees.length, 0);
+  }
 
   const items = await Promise.all(
     attendance.map(async (a) => {
