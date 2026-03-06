@@ -45,7 +45,7 @@ export default async function HomePage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">Dashboard Publik</h1>
+      <h1 className="text-2xl font-semibold">Daftar Peserta I&apos;tikaf Masjid An-Naba&apos; 1447H - 2026</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
         <div className="rounded border border-gray-200 bg-white p-3 shadow-sm">
           <div className="text-sm text-slate-600">Total Peserta + Anak</div>
