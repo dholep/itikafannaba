@@ -44,6 +44,10 @@ async function readJsonSafe<T>(filePath: string, fallback: T): Promise<T> {
   }
 }
 
+export async function getStorageMode(): Promise<"kv" | "file"> {
+  const kv = await getKV();
+  return kv ? "kv" : "file";
+}
 export type Participant = {
   id: number;
   participant_code: string;
