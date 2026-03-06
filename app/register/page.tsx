@@ -1,6 +1,7 @@
 import RegisterForm from "./RegisterForm";
 import { generateCaptcha } from "@/lib/captcha";
 import { getRegistrationOpen } from "@/lib/storage";
+import Image from "next/image";
 
 export const dynamic = "force-dynamic";
 
@@ -45,15 +46,26 @@ export default async function RegisterPage() {
           </div>
         </div>
       </div>
-      {!open && (
-        <div className="rounded border border-yellow-600 bg-yellow-50 text-yellow-800 px-3 py-2">
-          Pendaftaran sudah ditutup.
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+        <div className="md:col-span-2 space-y-4">
+          {!open && (
+            <div className="rounded border border-yellow-600 bg-yellow-50 text-yellow-800 px-3 py-2">
+              Pendaftaran sudah ditutup.
+            </div>
+          )}
+          <p className="text-slate-700">Isi Nomor HP, Nama, dan Alamat.</p>
+          {open && <RegisterForm captcha={captcha} />}
         </div>
-      )}
-      <p className="text-slate-700">
-        Isi Nomor HP, Nama, dan Alamat.
-      </p>
-      {open && <RegisterForm captcha={captcha} />}
+        <aside className="justify-self-end md:sticky md:top-4">
+          <Image
+            src="/qris.png"
+            alt="QRIS Masjid An Naba"
+            width={192}
+            height={260}
+            className="rounded shadow-sm"
+          />
+        </aside>
+      </div>
     </section>
   );
 }

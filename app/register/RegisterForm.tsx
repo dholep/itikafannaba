@@ -102,16 +102,6 @@ export default function RegisterForm({ captcha }: Props) {
       <button className="rounded bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-white">
         Daftar
       </button>
-
-      <div className="flex justify-end">
-        <Image
-          src="/qris.png"
-          alt="QRIS Masjid An Naba"
-          width={192}
-          height={260}
-          className="rounded shadow-sm"
-        />
-      </div>
     </form>
   );
 }
