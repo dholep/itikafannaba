@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { neon } from "@neondatabase/serverless";
 
 async function getKV() {
   const hasKV =
@@ -70,6 +71,38 @@ async function ensureDataFile() {
 
 export async function readParticipants(): Promise<Participant[]> {
   await ensureDataFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists participants (
+        id serial primary key,
+        participant_code text unique,
+        name text not null,
+        phone text not null unique,
+        address text,
+        created_at timestamptz not null default now()
+      );
+    `;
+    const rows = await sql<
+      {
+        id: number;
+        participant_code: string | null;
+        name: string;
+        phone: string;
+        address: string | null;
+        created_at: string;
+      }[]
+    >`select id, participant_code, name, phone, address, created_at from participants order by id asc;`;
+    return rows.map((r: any) => ({
+      id: r.id,
+      participant_code:
+        r.participant_code ?? `ITIKAF-${String(r.id).padStart(3, "0")}`,
+      name: r.name,
+      phone: r.phone,
+      address: r.address ?? undefined,
+      created_at: r.created_at,
+    }));
+  }
   const kv = await getKV();
   if (kv) {
     const items = (await kv.get("participants")) ?? [];
@@ -91,6 +124,30 @@ export async function writeParticipants(items: Participant[]) {
 export async function getByPhone(
   phone: string
 ): Promise<Participant | undefined> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const rows = await sql<
+      {
+        id: number;
+        participant_code: string | null;
+        name: string;
+        phone: string;
+        address: string | null;
+        created_at: string;
+      }[]
+    >`select id, participant_code, name, phone, address, created_at from participants where phone = ${phone} limit 1;`;
+    const r = rows[0];
+    if (!r) return undefined;
+    return {
+      id: r.id,
+      participant_code:
+        r.participant_code ?? `ITIKAF-${String(r.id).padStart(3, "0")}`,
+      name: r.name,
+      phone: r.phone,
+      address: r.address ?? undefined,
+      created_at: r.created_at,
+    };
+  }
   const items = await readParticipants();
   return items.find((p) => p.phone === phone);
 }
@@ -98,11 +155,59 @@ export async function getByPhone(
 export async function getByCode(
   code: string
 ): Promise<Participant | undefined> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const rows = await sql<
+      {
+        id: number;
+        participant_code: string | null;
+        name: string;
+        phone: string;
+        address: string | null;
+        created_at: string;
+      }[]
+    >`select id, participant_code, name, phone, address, created_at from participants where participant_code = ${code} limit 1;`;
+    const r = rows[0];
+    if (!r) return undefined;
+    return {
+      id: r.id,
+      participant_code:
+        r.participant_code ?? `ITIKAF-${String(r.id).padStart(3, "0")}`,
+      name: r.name,
+      phone: r.phone,
+      address: r.address ?? undefined,
+      created_at: r.created_at,
+    };
+  }
   const items = await readParticipants();
   return items.find((p) => p.participant_code === code);
 }
 
 export async function getById(id: number): Promise<Participant | undefined> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const rows = await sql<
+      {
+        id: number;
+        participant_code: string | null;
+        name: string;
+        phone: string;
+        address: string | null;
+        created_at: string;
+      }[]
+    >`select id, participant_code, name, phone, address, created_at from participants where id = ${id} limit 1;`;
+    const r = rows[0];
+    if (!r) return undefined;
+    return {
+      id: r.id,
+      participant_code:
+        r.participant_code ?? `ITIKAF-${String(r.id).padStart(3, "0")}`,
+      name: r.name,
+      phone: r.phone,
+      address: r.address ?? undefined,
+      created_at: r.created_at,
+    };
+  }
   const items = await readParticipants();
   return items.find((p) => p.id === id);
 }
@@ -110,6 +215,36 @@ export async function getById(id: number): Promise<Participant | undefined> {
 export async function addParticipant(
   data: Omit<Participant, "id" | "participant_code" | "created_at">
 ): Promise<Participant> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists participants (
+        id serial primary key,
+        participant_code text unique,
+        name text not null,
+        phone text not null unique,
+        address text,
+        created_at timestamptz not null default now()
+      );
+    `;
+    const inserted = await sql<{ id: number; created_at: string }[]>`
+      insert into participants (name, phone, address)
+      values (${data.name}, ${data.phone}, ${data.address ?? null})
+      returning id, created_at;
+    `;
+    const id = inserted[0].id;
+    const created_at = inserted[0].created_at;
+    const code = `ITIKAF-${String(id).padStart(3, "0")}`;
+    await sql`update participants set participant_code = ${code} where id = ${id};`;
+    return {
+      id,
+      participant_code: code,
+      name: data.name,
+      phone: data.phone,
+      address: data.address,
+      created_at,
+    };
+  }
   const items = await readParticipants();
   const id = (items[items.length - 1]?.id ?? 0) + 1;
   const participant_code = `ITIKAF-${String(id).padStart(3, "0")}`;
@@ -124,6 +259,41 @@ export async function updateParticipantByCode(
   code: string,
   patch: Partial<Pick<Participant, "name" | "phone" | "address">>
 ): Promise<Participant | undefined> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const current = await getByCode(code);
+    if (!current) return undefined;
+    try {
+      const updatedRows = await sql<
+        {
+          id: number;
+          participant_code: string;
+          name: string;
+          phone: string;
+          address: string | null;
+          created_at: string;
+        }[]
+      >`
+        update participants
+        set name = ${patch.name ?? current.name},
+            phone = ${patch.phone ?? current.phone},
+            address = ${patch.address ?? current.address ?? null}
+        where participant_code = ${code}
+        returning id, participant_code, name, phone, address, created_at;
+      `;
+      const r = updatedRows[0];
+      return {
+        id: r.id,
+        participant_code: r.participant_code,
+        name: r.name,
+        phone: r.phone,
+        address: r.address ?? undefined,
+        created_at: r.created_at,
+      };
+    } catch (e: any) {
+      throw new Error("Nomor HP sudah terdaftar");
+    }
+  }
   const items = await readParticipants();
   const idx = items.findIndex((p) => p.participant_code === code);
   if (idx === -1) return undefined;
@@ -148,6 +318,12 @@ export async function updateParticipantByCode(
 }
 
 export async function deleteParticipantByCode(code: string): Promise<boolean> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const res =
+      await sql`delete from participants where participant_code = ${code};`;
+    return true;
+  }
   const items = await readParticipants();
   const next = items.filter((p) => p.participant_code !== code);
   const changed = next.length !== items.length;
@@ -176,6 +352,24 @@ async function ensureChildrenFile() {
 
 export async function readChildren(): Promise<Child[]> {
   await ensureChildrenFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists children (
+        id serial primary key,
+        participant_id integer not null references participants(id) on delete cascade,
+        name text not null
+      );
+    `;
+    const rows = await sql<
+      { id: number; participant_id: number; name: string }[]
+    >`select id, participant_id, name from children order by id asc;`;
+    return rows.map((r: any) => ({
+      id: r.id,
+      participant_id: r.participant_id,
+      name: r.name,
+    }));
+  }
   const kv = await getKV();
   if (kv) {
     const items = (await kv.get("children")) ?? [];
@@ -186,6 +380,10 @@ export async function readChildren(): Promise<Child[]> {
 
 export async function writeChildren(items: Child[]) {
   await ensureChildrenFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    return;
+  }
   const kv = await getKV();
   if (kv) {
     await kv.set("children", items);
@@ -197,6 +395,17 @@ export async function writeChildren(items: Child[]) {
 export async function getChildrenByParticipantId(
   participant_id: number
 ): Promise<Child[]> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const rows = await sql<
+      { id: number; participant_id: number; name: string }[]
+    >`select id, participant_id, name from children where participant_id = ${participant_id} order by id asc;`;
+    return rows.map((r: any) => ({
+      id: r.id,
+      participant_id: r.participant_id,
+      name: r.name,
+    }));
+  }
   const items = await readChildren();
   return items.filter((c) => c.participant_id === participant_id);
 }
@@ -205,6 +414,22 @@ export async function addChildrenForParticipant(
   participant_id: number,
   names: string[]
 ): Promise<Child[]> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const added: Child[] = [];
+    for (const nm of names) {
+      const name = nm.trim();
+      if (!name) continue;
+      const rows = await sql<{ id: number }[]>`
+        insert into children (participant_id, name)
+        values (${participant_id}, ${name})
+        returning id;
+      `;
+      const id = rows[0].id;
+      added.push({ id, participant_id, name });
+    }
+    return added;
+  }
   const items = await readChildren();
   let lastId = items[items.length - 1]?.id ?? 0;
   const toAdd: Child[] = [];
@@ -221,6 +446,13 @@ export async function addChildrenForParticipant(
 export async function countChildrenByParticipantId(
   participant_id: number
 ): Promise<number> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const rows = await sql<{ count: number }[]>`
+      select count(*)::int as count from children where participant_id = ${participant_id};
+    `;
+    return rows[0]?.count ?? 0;
+  }
   const items = await readChildren();
   return items.filter((c) => c.participant_id === participant_id).length;
 }
@@ -229,6 +461,18 @@ export async function updateChildName(
   child_id: number,
   name: string
 ): Promise<Child | undefined> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const rows = await sql<
+      { id: number; participant_id: number; name: string }[]
+    >`
+      update children set name = ${name.trim()} where id = ${child_id}
+      returning id, participant_id, name;
+    `;
+    const r = rows[0];
+    if (!r) return undefined;
+    return { id: r.id, participant_id: r.participant_id, name: r.name };
+  }
   const items = await readChildren();
   const idx = items.findIndex((c) => c.id === child_id);
   if (idx === -1) return undefined;
@@ -239,6 +483,11 @@ export async function updateChildName(
 }
 
 export async function deleteChildById(child_id: number): Promise<boolean> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`delete from children where id = ${child_id};`;
+    return true;
+  }
   const items = await readChildren();
   const next = items.filter((c) => c.id !== child_id);
   const changed = next.length !== items.length;
