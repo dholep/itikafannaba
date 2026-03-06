@@ -766,6 +766,23 @@ async function ensureSettingsFile() {
 
 export async function readSettings(): Promise<Settings> {
   await ensureSettingsFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists settings (
+        id integer primary key default 1,
+        registration_open boolean not null default true
+      );
+    `;
+    const rows = await sql<{ registration_open: boolean }[]>`
+      select registration_open from settings where id = 1;
+    `;
+    if (rows.length === 0) {
+      await sql`insert into settings (id, registration_open) values (1, true) on conflict (id) do nothing;`;
+      return { registration_open: true };
+    }
+    return { registration_open: !!rows[0].registration_open };
+  }
   const kv: any = await getKV();
   let json: Settings | null = null;
   if (kv) {
@@ -783,6 +800,21 @@ export async function readSettings(): Promise<Settings> {
 
 export async function writeSettings(s: Settings) {
   await ensureSettingsFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists settings (
+        id integer primary key default 1,
+        registration_open boolean not null default true
+      );
+    `;
+    await sql`
+      insert into settings (id, registration_open)
+      values (1, ${s.registration_open})
+      on conflict (id) do update set registration_open = ${s.registration_open};
+    `;
+    return;
+  }
   const kv: any = await getKV();
   if (kv) {
     await kv.set("settings", s);
