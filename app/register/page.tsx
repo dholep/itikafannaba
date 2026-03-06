@@ -2,6 +2,8 @@ import RegisterForm from "./RegisterForm";
 import { generateCaptcha } from "@/lib/captcha";
 import { getRegistrationOpen } from "@/lib/storage";
 
+export const dynamic = "force-dynamic";
+
 export default async function RegisterPage() {
   const open = await getRegistrationOpen();
   const captcha = generateCaptcha();
