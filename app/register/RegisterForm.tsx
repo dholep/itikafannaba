@@ -13,10 +13,12 @@ type Props = {
 export default function RegisterForm({ captcha }: Props) {
   const [state, formAction] = useFormState(registerParticipant, initialState);
   const [childCount, setChildCount] = useState(0);
+  const [nameValue, setNameValue] = useState("");
 
   if (state?.success && state.code) {
     if (typeof window !== "undefined") {
-      window.location.href = `/qr/${state.code}`;
+      const q = new URLSearchParams({ name: nameValue }).toString();
+      window.location.href = `/qr/${state.code}?${q}`;
     }
   }
 
@@ -40,6 +42,7 @@ export default function RegisterForm({ captcha }: Props) {
         <input
           name="name"
           required
+          onChange={(e) => setNameValue(e.target.value)}
           className="rounded bg-white border border-gray-300 px-3 py-2 shadow-sm"
         />
       </label>
