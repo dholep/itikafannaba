@@ -3,17 +3,7 @@ import path from "path";
 import { neon } from "@neondatabase/serverless";
 
 async function getKV() {
-  const hasKV =
-    !!process.env.KV_REST_API_URL ||
-    !!process.env.KV_URL ||
-    !!process.env.VERCEL_KV_REST_API_URL;
-  if (!hasKV) return null;
-  try {
-    const mod = await import("@vercel/kv");
-    return mod.kv;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 function getBaseDataDir() {
@@ -46,7 +36,7 @@ async function readJsonSafe<T>(filePath: string, fallback: T): Promise<T> {
 }
 
 export async function getStorageMode(): Promise<"kv" | "file"> {
-  const kv = await getKV();
+  const kv: any = await getKV();
   return kv ? "kv" : "file";
 }
 export type Participant = {
@@ -103,7 +93,7 @@ export async function readParticipants(): Promise<Participant[]> {
       created_at: r.created_at,
     }));
   }
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     const items = (await kv.get("participants")) ?? [];
     return items as Participant[];
@@ -113,7 +103,7 @@ export async function readParticipants(): Promise<Participant[]> {
 
 export async function writeParticipants(items: Participant[]) {
   await ensureDataFile();
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     await kv.set("participants", items);
     return;
@@ -370,7 +360,7 @@ export async function readChildren(): Promise<Child[]> {
       name: r.name,
     }));
   }
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     const items = (await kv.get("children")) ?? [];
     return items as Child[];
@@ -384,7 +374,7 @@ export async function writeChildren(items: Child[]) {
   if (sql) {
     return;
   }
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     await kv.set("children", items);
     return;
@@ -518,7 +508,7 @@ async function ensureAttendanceFile() {
 
 export async function readAttendance(): Promise<AttendanceRecord[]> {
   await ensureAttendanceFile();
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     const items = (await kv.get("attendance")) ?? [];
     return items as AttendanceRecord[];
@@ -528,7 +518,7 @@ export async function readAttendance(): Promise<AttendanceRecord[]> {
 
 export async function writeAttendance(items: AttendanceRecord[]) {
   await ensureAttendanceFile();
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     await kv.set("attendance", items);
     return;
@@ -607,7 +597,7 @@ async function ensureSettingsFile() {
 
 export async function readSettings(): Promise<Settings> {
   await ensureSettingsFile();
-  const kv = await getKV();
+  const kv: any = await getKV();
   let json: Settings | null = null;
   if (kv) {
     json = (await kv.get("settings")) ?? null;
@@ -624,7 +614,7 @@ export async function readSettings(): Promise<Settings> {
 
 export async function writeSettings(s: Settings) {
   await ensureSettingsFile();
-  const kv = await getKV();
+  const kv: any = await getKV();
   if (kv) {
     await kv.set("settings", s);
     return;
