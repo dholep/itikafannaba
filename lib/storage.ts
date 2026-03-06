@@ -11,6 +11,25 @@ function dataPath(file: string) {
   return path.join(getBaseDataDir(), file);
 }
 
+async function readJsonSafe<T>(filePath: string, fallback: T): Promise<T> {
+  try {
+    const raw = await fs.readFile(filePath, "utf-8");
+    if (!raw || raw.trim().length === 0) {
+      await fs.writeFile(filePath, JSON.stringify(fallback, null, 2), "utf-8");
+      return fallback;
+    }
+    return JSON.parse(raw) as T;
+  } catch {
+    try {
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, JSON.stringify(fallback, null, 2), "utf-8");
+    } catch {
+      // ignore
+    }
+    return fallback;
+  }
+}
+
 export type Participant = {
   id: number;
   participant_code: string;
@@ -33,8 +52,7 @@ async function ensureDataFile() {
 
 export async function readParticipants(): Promise<Participant[]> {
   await ensureDataFile();
-  const raw = await fs.readFile(dataFile, "utf-8");
-  return JSON.parse(raw) as Participant[];
+  return readJsonSafe<Participant[]>(dataFile, []);
 }
 
 export async function writeParticipants(items: Participant[]) {
@@ -130,8 +148,7 @@ async function ensureChildrenFile() {
 
 export async function readChildren(): Promise<Child[]> {
   await ensureChildrenFile();
-  const raw = await fs.readFile(childrenFile, "utf-8");
-  return JSON.parse(raw) as Child[];
+  return readJsonSafe<Child[]>(childrenFile, []);
 }
 
 export async function writeChildren(items: Child[]) {
@@ -214,8 +231,7 @@ async function ensureAttendanceFile() {
 
 export async function readAttendance(): Promise<AttendanceRecord[]> {
   await ensureAttendanceFile();
-  const raw = await fs.readFile(attendanceFile, "utf-8");
-  return JSON.parse(raw) as AttendanceRecord[];
+  return readJsonSafe<AttendanceRecord[]>(attendanceFile, []);
 }
 
 export async function writeAttendance(items: AttendanceRecord[]) {
@@ -294,8 +310,9 @@ async function ensureSettingsFile() {
 
 export async function readSettings(): Promise<Settings> {
   await ensureSettingsFile();
-  const raw = await fs.readFile(settingsFile, "utf-8");
-  const json = JSON.parse(raw);
+  const json = await readJsonSafe<Settings>(settingsFile, {
+    registration_open: true,
+  });
   return {
     registration_open: !!json.registration_open,
   };
