@@ -5,14 +5,15 @@ import Image from "next/image";
 
 type Props = { params: { id: string } };
 
+export const dynamic = "force-dynamic";
+
 export default async function QrPage({ params }: Props) {
   const { id } = params;
   if (!id) return notFound();
-  const peserta = await getByCode(id);
-  const payload = {
-    id: peserta?.participant_code ?? id,
-    nama: peserta?.name ?? "Unknown",
-  };
+  const code = decodeURIComponent(id).toUpperCase();
+  const peserta = await getByCode(code);
+  if (!peserta) return notFound();
+  const payload = { id: peserta.participant_code, nama: peserta.name };
   const dataUrl = await QRCode.toDataURL(JSON.stringify(payload));
   return (
     <section className="space-y-6">
