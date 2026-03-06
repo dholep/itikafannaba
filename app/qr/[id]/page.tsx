@@ -9,8 +9,10 @@ export default async function QrPage({ params }: Props) {
   const { id } = params;
   if (!id) return notFound();
   const peserta = await getByCode(id);
-  if (!peserta) return notFound();
-  const payload = { id: peserta.participant_code, nama: peserta.name };
+  const payload = {
+    id: peserta?.participant_code ?? id,
+    nama: peserta?.name ?? "Unknown",
+  };
   const dataUrl = await QRCode.toDataURL(JSON.stringify(payload));
   return (
     <section className="space-y-6">
@@ -26,9 +28,9 @@ export default async function QrPage({ params }: Props) {
         />
         <div className="text-center">
           <div className="text-lg font-semibold tracking-wide">
-            {peserta.participant_code}
+            {payload.id}
           </div>
-          <div className="text-sm text-slate-600">{peserta.name}</div>
+          <div className="text-sm text-slate-600">{payload.nama}</div>
         </div>
         <h2>DONASI ITIKAF</h2>
         <Image
