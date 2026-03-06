@@ -83,6 +83,41 @@ export async function readParticipants(): Promise<Participant[]> {
         created_at: string;
       }[]
     >`select id, participant_code, name, phone, address, created_at from participants order by id asc;`;
+    if (rows.length === 0) {
+      const fileItems = await readJsonSafe<Participant[]>(dataFile, []);
+      if (fileItems.length > 0) {
+        for (const p of fileItems) {
+          try {
+            await sql`
+              insert into participants (participant_code, name, phone, address, created_at)
+              values (${p.participant_code}, ${p.name}, ${p.phone}, ${
+              p.address ?? null
+            }, ${p.created_at})
+              on conflict (participant_code) do nothing;
+            `;
+          } catch {}
+        }
+        const seeded = await sql<
+          {
+            id: number;
+            participant_code: string | null;
+            name: string;
+            phone: string;
+            address: string | null;
+            created_at: string;
+          }[]
+        >`select id, participant_code, name, phone, address, created_at from participants order by id asc;`;
+        return seeded.map((r: any) => ({
+          id: r.id,
+          participant_code:
+            r.participant_code ?? `ITIKAF-${String(r.id).padStart(3, "0")}`,
+          name: r.name,
+          phone: r.phone,
+          address: r.address ?? undefined,
+          created_at: r.created_at,
+        }));
+      }
+    }
     return rows.map((r: any) => ({
       id: r.id,
       participant_code:

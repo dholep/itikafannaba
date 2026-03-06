@@ -1,6 +1,8 @@
 import { readParticipants, getChildrenByParticipantId } from "@/lib/storage";
 import { deleteParticipant, updateParticipant, updateChild, deleteChild, addChild } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminParticipants() {
   const items = await readParticipants();
   return (
