@@ -16,8 +16,7 @@ export default async function RegisterPage() {
         </div>
       )}
       <p className="text-slate-700">
-        Isi Nomor HP, Nama, dan Alamat. Pilihan malam, sahur/berbuka, serta anak
-        akan ditambahkan berikutnya.
+        Isi Nomor HP, Nama, dan Alamat.
       </p>
       {open && <RegisterForm captcha={captcha} />}
     </section>
