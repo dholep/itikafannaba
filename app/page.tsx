@@ -58,18 +58,20 @@ export default async function HomePage() {
         <div className="justify-self-end mt-2"></div>
       </div>
 
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold">Laporan Absensi</h2>
-        <DashboardAttendanceReport items={items} />
-      </div>
-      <div className="flex justify-end">
-        <Image
-          src="/qris.png"
-          alt="QRIS Masjid An Naba"
-          width={192}
-          height={260}
-          className="rounded shadow-sm"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
+        <div className="md:col-span-2 space-y-2">
+          <h2 className="text-xl font-semibold">Laporan Absensi</h2>
+          <DashboardAttendanceReport items={items} />
+        </div>
+        <aside className="justify-self-end md:sticky md:top-4">
+          <Image
+            src="/qris.png"
+            alt="QRIS Masjid An Naba"
+            width={192}
+            height={260}
+            className="rounded shadow-sm"
+          />
+        </aside>
       </div>
     </section>
   );
