@@ -5,6 +5,7 @@ import {
   getById,
 } from "@/lib/storage";
 import DashboardAttendanceReport from "./DashboardAttendanceReport";
+import Image from "next/image";
 
 export default async function HomePage() {
   const participants = await readParticipants();
@@ -53,11 +54,15 @@ export default async function HomePage() {
         <h2 className="text-xl font-semibold">Laporan Absensi</h2>
         <DashboardAttendanceReport items={items} />
       </div>
-      <img
-        src="/qris.png"
-        alt="QRIS Masjid An Naba"
-        className="w-35 md:w-48 rounded shadow-sm"
-      />
+      <div className="flex justify-end">
+        <Image
+          src="/qris.png"
+          alt="QRIS Masjid An Naba"
+          width={192}
+          height={260}
+          className="rounded shadow-sm"
+        />
+      </div>
     </section>
   );
 }

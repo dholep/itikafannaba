@@ -2,6 +2,7 @@
 import { useFormState } from "react-dom";
 import { useState } from "react";
 import { registerParticipant } from "./register_actions";
+import Image from "next/image";
 
 const initialState: any = null;
 
@@ -99,11 +100,15 @@ export default function RegisterForm({ captcha }: Props) {
         Daftar
       </button>
 
-      <img
-        src="/qris.png"
-        alt="QRIS Masjid An Naba"
-        className="w-35 md:w-48 rounded shadow-sm"
-      />
+      <div className="flex justify-end">
+        <Image
+          src="/qris.png"
+          alt="QRIS Masjid An Naba"
+          width={192}
+          height={260}
+          className="rounded shadow-sm"
+        />
+      </div>
     </form>
   );
 }
