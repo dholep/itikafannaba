@@ -1,6 +1,20 @@
 import fs from "fs/promises";
 import path from "path";
 
+async function getKV() {
+  const hasKV =
+    !!process.env.KV_REST_API_URL ||
+    !!process.env.KV_URL ||
+    !!process.env.VERCEL_KV_REST_API_URL;
+  if (!hasKV) return null;
+  try {
+    const mod = await import("@vercel/kv");
+    return mod.kv;
+  } catch {
+    return null;
+  }
+}
+
 function getBaseDataDir() {
   const envDir = process.env.DATA_DIR;
   if (envDir && envDir.trim()) return envDir;
@@ -52,11 +66,21 @@ async function ensureDataFile() {
 
 export async function readParticipants(): Promise<Participant[]> {
   await ensureDataFile();
+  const kv = await getKV();
+  if (kv) {
+    const items = (await kv.get("participants")) ?? [];
+    return items as Participant[];
+  }
   return readJsonSafe<Participant[]>(dataFile, []);
 }
 
 export async function writeParticipants(items: Participant[]) {
   await ensureDataFile();
+  const kv = await getKV();
+  if (kv) {
+    await kv.set("participants", items);
+    return;
+  }
   await fs.writeFile(dataFile, JSON.stringify(items, null, 2), "utf-8");
 }
 
@@ -148,11 +172,21 @@ async function ensureChildrenFile() {
 
 export async function readChildren(): Promise<Child[]> {
   await ensureChildrenFile();
+  const kv = await getKV();
+  if (kv) {
+    const items = (await kv.get("children")) ?? [];
+    return items as Child[];
+  }
   return readJsonSafe<Child[]>(childrenFile, []);
 }
 
 export async function writeChildren(items: Child[]) {
   await ensureChildrenFile();
+  const kv = await getKV();
+  if (kv) {
+    await kv.set("children", items);
+    return;
+  }
   await fs.writeFile(childrenFile, JSON.stringify(items, null, 2), "utf-8");
 }
 
@@ -231,11 +265,21 @@ async function ensureAttendanceFile() {
 
 export async function readAttendance(): Promise<AttendanceRecord[]> {
   await ensureAttendanceFile();
+  const kv = await getKV();
+  if (kv) {
+    const items = (await kv.get("attendance")) ?? [];
+    return items as AttendanceRecord[];
+  }
   return readJsonSafe<AttendanceRecord[]>(attendanceFile, []);
 }
 
 export async function writeAttendance(items: AttendanceRecord[]) {
   await ensureAttendanceFile();
+  const kv = await getKV();
+  if (kv) {
+    await kv.set("attendance", items);
+    return;
+  }
   await fs.writeFile(attendanceFile, JSON.stringify(items, null, 2), "utf-8");
 }
 
@@ -310,9 +354,16 @@ async function ensureSettingsFile() {
 
 export async function readSettings(): Promise<Settings> {
   await ensureSettingsFile();
-  const json = await readJsonSafe<Settings>(settingsFile, {
-    registration_open: true,
-  });
+  const kv = await getKV();
+  let json: Settings | null = null;
+  if (kv) {
+    json = (await kv.get("settings")) ?? null;
+  }
+  if (!json) {
+    json = await readJsonSafe<Settings>(settingsFile, {
+      registration_open: true,
+    });
+  }
   return {
     registration_open: !!json.registration_open,
   };
@@ -320,6 +371,11 @@ export async function readSettings(): Promise<Settings> {
 
 export async function writeSettings(s: Settings) {
   await ensureSettingsFile();
+  const kv = await getKV();
+  if (kv) {
+    await kv.set("settings", s);
+    return;
+  }
   await fs.writeFile(settingsFile, JSON.stringify(s, null, 2), "utf-8");
 }
 
