@@ -543,6 +543,76 @@ async function ensureAttendanceFile() {
 
 export async function readAttendance(): Promise<AttendanceRecord[]> {
   await ensureAttendanceFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists attendance (
+        id serial primary key,
+        participant_id integer not null references participants(id) on delete cascade,
+        date text not null,
+        attendees jsonb not null default '[]'::jsonb,
+        night integer
+      );
+    `;
+    const rows = await sql<
+      {
+        id: number;
+        participant_id: number;
+        date: string;
+        attendees: any;
+        night: number | null;
+      }[]
+    >`select id, participant_id, date, attendees, night from attendance order by id asc;`;
+    if (rows.length === 0) {
+      const fileItems = await readJsonSafe<AttendanceRecord[]>(
+        attendanceFile,
+        []
+      );
+      if (fileItems.length > 0) {
+        for (const r of fileItems) {
+          try {
+            await sql`
+              insert into attendance (participant_id, date, attendees, night)
+              values (${r.participant_id}, ${r.date}, ${JSON.stringify(
+              r.attendees
+            )}::jsonb, ${r.night ?? null})
+            `;
+          } catch {}
+        }
+        const seeded = await sql<
+          {
+            id: number;
+            participant_id: number;
+            date: string;
+            attendees: any;
+            night: number | null;
+          }[]
+        >`select id, participant_id, date, attendees, night from attendance order by id asc;`;
+        return seeded.map((r: any) => ({
+          id: r.id,
+          participant_id: r.participant_id,
+          date: r.date,
+          attendees: Array.isArray(r.attendees)
+            ? (r.attendees as string[])
+            : typeof r.attendees === "string"
+            ? JSON.parse(r.attendees)
+            : [],
+          night: r.night ?? undefined,
+        }));
+      }
+    }
+    return rows.map((r: any) => ({
+      id: r.id,
+      participant_id: r.participant_id,
+      date: r.date,
+      attendees: Array.isArray(r.attendees)
+        ? (r.attendees as string[])
+        : typeof r.attendees === "string"
+        ? JSON.parse(r.attendees)
+        : [],
+      night: r.night ?? undefined,
+    }));
+  }
   const kv: any = await getKV();
   if (kv) {
     const items = (await kv.get("attendance")) ?? [];
@@ -553,6 +623,10 @@ export async function readAttendance(): Promise<AttendanceRecord[]> {
 
 export async function writeAttendance(items: AttendanceRecord[]) {
   await ensureAttendanceFile();
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    return;
+  }
   const kv: any = await getKV();
   if (kv) {
     await kv.set("attendance", items);
@@ -567,6 +641,27 @@ export async function addAttendanceRecord(
   attendees: string[],
   night?: number
 ): Promise<AttendanceRecord> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`
+      create table if not exists attendance (
+        id serial primary key,
+        participant_id integer not null references participants(id) on delete cascade,
+        date text not null,
+        attendees jsonb not null default '[]'::jsonb,
+        night integer
+      );
+    `;
+    const rows = await sql<{ id: number }[]>`
+      insert into attendance (participant_id, date, attendees, night)
+      values (${participant_id}, ${date}, ${JSON.stringify(
+      attendees
+    )}::jsonb, ${night ?? null})
+      returning id;
+    `;
+    const id = rows[0].id;
+    return { id, participant_id, date, attendees, night };
+  }
   const items = await readAttendance();
   const id = (items[items.length - 1]?.id ?? 0) + 1;
   const record: AttendanceRecord = {
@@ -585,6 +680,40 @@ export async function updateAttendanceRecord(
   id: number,
   patch: Partial<Pick<AttendanceRecord, "date" | "night" | "attendees">>
 ): Promise<AttendanceRecord | undefined> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    const currentList = await readAttendance();
+    const current = currentList.find((r) => r.id === id);
+    if (!current) return undefined;
+    const rows = await sql<
+      {
+        id: number;
+        participant_id: number;
+        date: string;
+        attendees: any;
+        night: number | null;
+      }[]
+    >`
+      update attendance
+      set date = ${patch.date ?? current.date},
+          night = ${patch.night ?? current.night ?? null},
+          attendees = ${JSON.stringify(
+            patch.attendees ?? current.attendees
+          )}::jsonb
+      where id = ${id}
+      returning id, participant_id, date, attendees, night;
+    `;
+    const r = rows[0];
+    return {
+      id: r.id,
+      participant_id: r.participant_id,
+      date: r.date,
+      attendees: Array.isArray(r.attendees)
+        ? (r.attendees as string[])
+        : JSON.parse(r.attendees as string),
+      night: r.night ?? undefined,
+    };
+  }
   const items = await readAttendance();
   const idx = items.findIndex((r) => r.id === id);
   if (idx === -1) return undefined;
@@ -601,6 +730,11 @@ export async function updateAttendanceRecord(
 }
 
 export async function deleteAttendanceRecordById(id: number): Promise<boolean> {
+  const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
+  if (sql) {
+    await sql`delete from attendance where id = ${id};`;
+    return true;
+  }
   const items = await readAttendance();
   const next = items.filter((r) => r.id !== id);
   const changed = next.length !== items.length;
