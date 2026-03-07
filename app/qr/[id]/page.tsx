@@ -17,7 +17,8 @@ export default async function QrPage({ params, searchParams }: Props) {
   const payload = peserta
     ? { id: peserta.participant_code, nama: peserta.name }
     : { id: code, nama: fallbackName ?? "Unknown" };
-  const dataUrl = await QRCode.toDataURL(JSON.stringify(payload));
+  const qrText = `ITIKAF ${payload.id} | ${payload.nama}`;
+  const dataUrl = await QRCode.toDataURL(qrText);
   return (
     <section className="space-y-6">
       <h1 className="text-2xl font-semibold">QR Code Peserta</h1>
