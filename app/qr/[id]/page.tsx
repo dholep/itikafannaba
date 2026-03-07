@@ -3,7 +3,10 @@ import { getByCode } from "@/lib/storage";
 import QRCode from "qrcode";
 import Image from "next/image";
 
-type Props = { params: { id: string }; searchParams?: { [key: string]: string | string[] | undefined } };
+type Props = {
+  params: { id: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+};
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +20,7 @@ export default async function QrPage({ params, searchParams }: Props) {
   const payload = peserta
     ? { id: peserta.participant_code, nama: peserta.name }
     : { id: code, nama: fallbackName ?? "Unknown" };
-  const qrText = `ITIKAF ${payload.id} | ${payload.nama}`;
-  const dataUrl = await QRCode.toDataURL(qrText);
+  const dataUrl = await QRCode.toDataURL(payload.id);
   return (
     <section className="space-y-6">
       <h1 className="text-2xl font-semibold">QR Code Peserta</h1>
