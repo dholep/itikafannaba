@@ -5,10 +5,16 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminParticipants() {
   const items = await readParticipants();
+  const usingNeon = !!process.env.DATABASE_URL;
   return (
     <section className="space-y-6">
       <h1 className="text-2xl font-semibold">Manajemen Peserta</h1>
       <p className="text-slate-700">Tabel peserta dari storage.</p>
+      {!usingNeon && (
+        <div className="rounded border border-yellow-600 bg-yellow-50 text-yellow-800 px-3 py-2">
+          Mode file lokal aktif. Tambahkan DATABASE_URL agar membaca Neon DB.
+        </div>
+      )}
       <div className="overflow-x-auto rounded border border-gray-200 bg-white shadow-sm">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100">
