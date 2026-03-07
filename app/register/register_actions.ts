@@ -6,6 +6,7 @@ import {
   getRegistrationOpen,
 } from "@/lib/storage";
 import { verifyCaptcha } from "@/lib/captcha";
+import { revalidatePath } from "next/cache";
 
 type ActionState = { error: string } | { success: true; code: string };
 
@@ -39,5 +40,7 @@ export async function registerParticipant(
   if (children.length > 0) {
     await addChildrenForParticipant(saved.id, children);
   }
+  revalidatePath("/");
+  revalidatePath("/admin/participants");
   return { success: true, code: saved.participant_code };
 }
