@@ -1,5 +1,6 @@
 "use client";
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
+import { useFormStatus } from "react-dom";
 import { deleteAttendance, updateAttendance } from "./actions";
 
 type Row = {
@@ -67,10 +68,7 @@ export default function AdminAttendanceTable({ rows }: { rows: Row[] }) {
               </tr>
             ) : (
               filtered.map((x) => (
-                <tr
-                  key={x.id}
-                  className="border-t border-gray-200 align-top"
-                >
+                <tr key={x.id} className="border-t border-gray-200 align-top">
                   <td className="px-3 py-2">
                     <form className="grid gap-2" action={updateAttendance}>
                       <input type="hidden" name="id" value={x.id} />
@@ -124,9 +122,7 @@ export default function AdminAttendanceTable({ rows }: { rows: Row[] }) {
                           name="attendees_text"
                           value={x.attendees.join(", ")}
                         />
-                        <button className="rounded bg-emerald-600 hover:bg-emerald-500 px-3 py-1 text-white">
-                          Simpan
-                        </button>
+                        <SaveButton />
                       </form>
                       <form action={deleteAttendance}>
                         <input type="hidden" name="id" value={x.id} />
@@ -142,6 +138,32 @@ export default function AdminAttendanceTable({ rows }: { rows: Row[] }) {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function SaveButton() {
+  const { pending } = useFormStatus();
+  const prev = useRef(false);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    if (prev.current && !pending) {
+      setSaved(true);
+      const t = setTimeout(() => setSaved(false), 2000);
+      return () => clearTimeout(t);
+    }
+    prev.current = pending;
+  }, [pending]);
+  return (
+    <div className="inline-flex items-center gap-2">
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded bg-emerald-600 hover:bg-emerald-500 px-3 py-1 text-white disabled:opacity-60"
+      >
+        {pending ? "Menyimpan..." : "Simpan"}
+      </button>
+      {saved && <span className="text-emerald-700 text-sm">Tersimpan</span>}
     </div>
   );
 }
