@@ -56,6 +56,7 @@ export async function saveAttendance(formData: FormData) {
       isNaN(night) ? undefined : night
     );
     revalidatePath("/admin/attendance");
+    revalidatePath("/");
     return { success: true, count: attendees.length };
   } catch {
     return { error: "Gagal menyimpan absensi" };
@@ -79,6 +80,7 @@ export async function updateAttendance(formData: FormData) {
       attendees: attendees.length ? attendees : undefined,
     });
     revalidatePath("/admin/attendance");
+    revalidatePath("/");
   } catch {}
 }
 
@@ -88,5 +90,6 @@ export async function deleteAttendance(formData: FormData) {
     if (!id) return;
     await deleteAttendanceRecordById(id);
     revalidatePath("/admin/attendance");
+    revalidatePath("/");
   } catch {}
 }
