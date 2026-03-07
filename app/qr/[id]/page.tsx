@@ -39,6 +39,20 @@ export default async function QrPage({ params, searchParams }: Props) {
           </div>
           <div className="text-sm text-slate-600">{payload.nama}</div>
         </div>
+        <div className="text-center grid gap-2">
+          <p className="text-sm text-slate-700">
+            Bergabung ke grup WhatsApp peserta untuk mendapatkan informasi resmi
+            i’tikaf. Simpan QR Code di atas sebagai bukti pendaftaran.
+          </p>
+          <a
+            href="https://chat.whatsapp.com/FcfJlJVtcyT1jNCrk400Iu"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex justify-center rounded bg-green-600 hover:bg-green-500 px-4 py-2 text-white"
+          >
+            Masuk Grup WhatsApp
+          </a>
+        </div>
         <h2>DONASI ITIKAF</h2>
         <Image
           src="/qris.png"
