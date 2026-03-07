@@ -12,6 +12,11 @@ export default function AttendanceWidget() {
   );
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const defaultDate = new Date(
+    Date.now() - new Date().getTimezoneOffset() * 60000
+  )
+    .toISOString()
+    .slice(0, 10);
 
   const names = useMemo(() => {
     if (!lookupState?.success) return [];
@@ -82,6 +87,7 @@ export default function AttendanceWidget() {
               <input
                 type="date"
                 name="date_input"
+                defaultValue={defaultDate}
                 className="rounded bg-white border border-gray-300 px-3 py-2 shadow-sm"
               />
             </label>
