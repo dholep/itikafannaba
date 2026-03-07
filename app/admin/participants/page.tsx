@@ -1,3 +1,4 @@
+import React from "react";
 import { readParticipants, getChildrenByParticipantId } from "@/lib/storage";
 import {
   deleteParticipant,
@@ -52,7 +53,7 @@ export default async function AdminParticipants() {
               items.map((p) => {
                 const children = childrenById[p.id] ?? [];
                 return (
-                  <>
+                  <React.Fragment key={p.participant_code}>
                     <tr
                       key={p.participant_code}
                       className="border-t border-gray-200 align-top"
@@ -199,7 +200,7 @@ export default async function AdminParticipants() {
                         </div>
                       </td>
                     </tr>
-                  </>
+                  </React.Fragment>
                 );
               })
             )}
