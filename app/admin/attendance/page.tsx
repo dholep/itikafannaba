@@ -18,11 +18,17 @@ export default async function AdminAttendance() {
       };
     })
   );
+  rows.sort((a, b) => {
+    const d = b.date.localeCompare(a.date);
+    if (d !== 0) return d;
+    return b.id - a.id;
+  });
   return (
     <section className="space-y-6">
       <h1 className="text-2xl font-semibold">Absensi Admin</h1>
       <p className="text-slate-700">
-        Masukkan ID Peserta untuk menampilkan nama peserta dan anak-anaknya, centang yang hadir lalu simpan.
+        Masukkan ID Peserta untuk menampilkan nama peserta dan anak-anaknya,
+        centang yang hadir lalu simpan.
       </p>
       <AttendanceWidget />
 
