@@ -11,16 +11,22 @@ export default async function AdminHome() {
       <p className="text-slate-700">Pilih fitur:</p>
       <div className="flex flex-wrap gap-3">
         <Link
-          className="rounded border border-gray-300 bg-white px-4 py-2 shadow-sm"
+          className="rounded border border-gray-300 bg-white px-4 py-2 shadow-sm hover:bg-gray-50"
           href="/admin/participants"
         >
           Manajemen Peserta
         </Link>
         <Link
-          className="rounded border border-gray-300 bg-white px-4 py-2 shadow-sm"
+          className="rounded border border-gray-300 bg-white px-4 py-2 shadow-sm hover:bg-gray-50"
           href="/admin/attendance"
         >
           Absensi
+        </Link>
+        <Link
+          className="rounded border border-gray-300 bg-white px-4 py-2 shadow-sm hover:bg-gray-50"
+          href="/admin/print-barcodes"
+        >
+          Cetak Barcode
         </Link>
       </div>
       <div className="rounded border border-gray-200 bg-white p-4 shadow-sm max-w-md">
