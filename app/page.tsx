@@ -46,7 +46,7 @@ export default async function HomePage() {
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">Daftar Peserta I&apos;tikaf Masjid An-Naba&apos; 1447H - 2026</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-start">
         <div className="rounded border border-gray-200 bg-white p-3 shadow-sm">
           <div className="text-sm text-slate-600">Total Peserta + Anak</div>
           <div className="text-2xl font-bold">{totalPeople}</div>
@@ -58,17 +58,17 @@ export default async function HomePage() {
         <div className="justify-self-end mt-2"></div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-start">
         <div className="md:col-span-2 space-y-2">
           <h2 className="text-xl font-semibold">Laporan Absensi</h2>
           <DashboardAttendanceReport items={items} />
         </div>
-        <aside className="justify-self-end md:sticky md:top-4">
+        <aside className="justify-self-end md:sticky md:top-4 md:pl-1">
           <Image
             src="/qris.png"
             alt="QRIS Masjid An Naba"
-            width={192}
-            height={260}
+            width={220}
+            height={298}
             className="rounded shadow-sm"
           />
         </aside>
