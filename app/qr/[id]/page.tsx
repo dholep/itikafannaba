@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getByCode } from "@/lib/storage";
 import QRCode from "qrcode";
 import Image from "next/image";
+import Barcode from "../Barcode";
 
 type Props = {
   params: { id: string };
@@ -33,6 +34,10 @@ export default async function QrPage({ params, searchParams }: Props) {
           unoptimized
           className="bg-white p-2 rounded"
         />
+        <div className="w-full grid gap-2 justify-items-center">
+          <div className="text-sm text-slate-600">Barcode</div>
+          <Barcode value={payload.id} />
+        </div>
         <div className="text-center">
           <div className="text-lg font-semibold tracking-wide">
             {payload.id}
