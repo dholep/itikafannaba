@@ -7,6 +7,7 @@ import {
 import DashboardAttendanceReport from "./DashboardAttendanceReport";
 import Image from "next/image";
 import AutoRefresh from "./AutoRefresh";
+import AttendanceCountCard from "./components/AttendanceCountCard";
 
 export const dynamic = "force-dynamic";
 
@@ -15,20 +16,6 @@ export default async function HomePage() {
   const children = await readChildren();
   const totalPeople = participants.length + children.length;
   const attendance = await readAttendance();
-  const wibNow = new Date(Date.now() + 7 * 60 * 60 * 1000);
-  const today = `${wibNow.getUTCFullYear()}-${String(wibNow.getUTCMonth() + 1).padStart(
-    2,
-    "0"
-  )}-${String(wibNow.getUTCDate()).padStart(2, "0")}`;
-  let todayCount = attendance
-    .filter((a) => a.date === today)
-    .reduce((acc, a) => acc + a.attendees.length, 0);
-  if (todayCount === 0 && attendance.length > 0) {
-    const latestDate = attendance.reduce((m, a) => (a.date > m ? a.date : m), attendance[0].date);
-    todayCount = attendance
-      .filter((a) => a.date === latestDate)
-      .reduce((acc, a) => acc + a.attendees.length, 0);
-  }
 
   const items = await Promise.all(
     attendance.map(async (a) => {
@@ -53,10 +40,7 @@ export default async function HomePage() {
           <div className="text-sm text-slate-600">Total Peserta + Anak</div>
           <div className="text-2xl font-bold">{totalPeople}</div>
         </div>
-        <div className="rounded border border-gray-200 bg-white p-3 shadow-sm">
-          <div className="text-sm text-slate-600">Total Hadir Hari Ini</div>
-          <div className="text-2xl font-bold">{todayCount}</div>
-        </div>
+        <AttendanceCountCard attendance={attendance} />
         <div className="justify-self-end mt-2"></div>
       </div>
 
